@@ -19,8 +19,16 @@ class Title(models.Model):
 
 
 class Review(models.Model):
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
-    title = models.ForeignKey(Title, on_delete=models.CASCADE)
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='review'
+    )
+    title = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE,
+        related_name='review'
+    )
     text = models.CharField(max_length=200)
 
     def __str__(self):
@@ -28,8 +36,16 @@ class Review(models.Model):
 
 
 class Comments(models.Model):
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
-    review = models.ForeignKey(Review, on_delete=models.CASCADE)
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='comments'
+    )
+    review = models.ForeignKey(
+        Review,
+        on_delete=models.CASCADE,
+        related_name='comments'
+    )
     text = models.CharField(max_length=200)
 
     def __str__(self):
@@ -37,8 +53,16 @@ class Comments(models.Model):
 
 
 class Rating(models.Model):
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
-    title = models.ForeignKey(Title, on_delete=models.CASCADE)
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='rating'
+    )
+    title = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE,
+        related_name='rating'
+    )
     score = models.IntegerField(validators=[validate_rate])
 
     def __str__(self):
