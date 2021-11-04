@@ -11,10 +11,7 @@ def validate_rate(value):
 
 
 class Title(models.Model):
-    # author = models.ForeignKey(User)
     name = models.CharField(max_length=100)
-    # review = models.ForeignKey(Review)
-    # rating = models.ForeignKey(Rating)
     description = models.CharField(max_length=200)
 
     def __str__(self):
