@@ -30,6 +30,9 @@ class Review(models.Model):
         related_name='review'
     )
     text = models.CharField(max_length=200)
+    pub_date = models.DateTimeField(
+        auto_now_add=True
+    )
 
     def __str__(self):
         return self.text
@@ -47,6 +50,9 @@ class Comments(models.Model):
         related_name='comments'
     )
     text = models.CharField(max_length=200)
+    pub_date = models.DateTimeField(
+        auto_now_add=True
+    )
 
     def __str__(self):
         return self.text
