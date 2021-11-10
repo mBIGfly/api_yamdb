@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'djoser',
     'review',
     'api',
+
 ]
 
 MIDDLEWARE = [
@@ -103,6 +104,12 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 
+AUTH_USER_MODEL = 'review.User'
+
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
+
+
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static/'),)
@@ -116,7 +123,6 @@ REST_FRAMEWORK = {
     ],
 
 }
-
 
 SIMPLE_JWT = {'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
               'AUTH_HEADER_TYPES': ('Bearer',), }

@@ -1,7 +1,23 @@
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 
-from review.models import Review, Comments, Title
+from review.models import User, Review, Comments, Title
+
+
+class SendCodeSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+
+
+class CheckConfirmationCodeSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+    confirmation_code = serializers.CharField(required=True)
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ('first_name', 'last_name',
+                  'username', 'bio', 'email', 'role',)
+        model = User
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -10,6 +26,16 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ('id', 'text', 'author', 'score', 'pub_date')
         model = Review
+
+    def validate(self, data):
+        title = self.context.get('title')
+        request = self.context.get('request')
+
+        if Review.objects.filter(title=title, author=request.user).exists():
+            raise serializers.ValidationError(
+                "Вы уже писали отзыв на это произведение!"
+            )
+        return data
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -22,7 +48,8 @@ class CommentSerializer(serializers.ModelSerializer):
 
 class TitleSerializer(serializers.ModelSerializer):
     author = SlugRelatedField(slug_field='username', read_only=True)
-    rating = serializers.IntegerField(read_only=True, required=False) # добавила поле для расчета рейтинга
+    # добавила поле для расчета рейтинга
+    rating = serializers.IntegerField(read_only=True, required=False)
 
     class Meta:
         fields = ('id', 'name', 'rating', 'author')
