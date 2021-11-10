@@ -4,13 +4,13 @@ from django.contrib.auth.hashers import check_password, make_password
 from django.shortcuts import get_object_or_404
 from django.db.models import Avg
 from rest_framework import viewsets, permissions, filters, status
-from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 
-from review.models import User, Title, Review
+from reviews.models import User, Title, Review
 from .serializers import (CheckConfirmationCodeSerializer, SendCodeSerializer,
                           UserSerializer, ReviewSerializer, CommentSerializer,
                           TitleSerializer)
@@ -88,14 +88,20 @@ class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,
                           IsAuthorOrAdminOrModerator)
-    pagination_class = LimitOffsetPagination
+    pagination_class = PageNumberPagination
+
+    def get_serializer_context(self):
+        context = super(ReviewViewSet, self).get_serializer_context()
+        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
+        context.update({'title': title})
+        return context
 
     def get_queryset(self):
         title = get_object_or_404(
             Title,
             pk=self.kwargs.get('title_id')
         )
-        return title.review.all().order_by('id')
+        return title.reviews.all().order_by('id')
 
     def perform_create(self, serializer):
         title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
@@ -106,7 +112,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,
                           IsAuthorOrAdminOrModerator)
-    pagination_class = LimitOffsetPagination
+    pagination_class = PageNumberPagination
 
     def get_queryset(self):
         review_queryset = get_object_or_404(
@@ -114,7 +120,7 @@ class CommentViewSet(viewsets.ModelViewSet):
             title_id=self.kwargs.get('title_id'),
             id=self.kwargs.get('review_id')
         )
-        return review_queryset.comments
+        return review_queryset.comments.all()
 
     def perform_create(self, serializer):
         review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
@@ -123,7 +129,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 class TitletViewSet(viewsets.ModelViewSet):
     # написала,чтобы проверить работает ли подсчет рейтинга
-    queryset = Title.objects.annotate(rating=Avg("review__score"))
+    queryset = Title.objects.annotate(rating=Avg("reviews__score"))
     serializer_class = TitleSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
-    pagination_class = LimitOffsetPagination
+    pagination_class = PageNumberPagination

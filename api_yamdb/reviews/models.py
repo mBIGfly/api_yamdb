@@ -49,12 +49,12 @@ class Review(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='review'
+        related_name='reviews'
     )
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
-        related_name='review'
+        related_name='reviews'
     )
     text = models.CharField(max_length=200)
     pub_date = models.DateTimeField(
@@ -67,6 +67,14 @@ class Review(models.Model):
             MaxValueValidator(10)
         ]
     )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["author", "title"],
+                name="unique_review"
+            )
+        ]
 
     def __str__(self):
         return self.text

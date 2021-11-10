@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 
-from review.models import User, Review, Comments, Title
+from reviews.models import User, Review, Comments, Title
 
 
 class SendCodeSerializer(serializers.Serializer):
@@ -31,10 +31,11 @@ class ReviewSerializer(serializers.ModelSerializer):
         title = self.context.get('title')
         request = self.context.get('request')
 
-        if Review.objects.filter(title=title, author=request.user).exists():
-            raise serializers.ValidationError(
-                "Вы уже писали отзыв на это произведение!"
-            )
+        if (
+            request.method != 'PATCH' and Review.objects.filter(
+                title=title, author=request.user).exists()
+        ):
+            raise serializers.ValidationError('Score already exists')
         return data
 
 
