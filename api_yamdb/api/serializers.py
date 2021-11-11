@@ -35,7 +35,9 @@ class ReviewSerializer(serializers.ModelSerializer):
             request.method != 'PATCH' and Review.objects.filter(
                 title=title, author=request.user).exists()
         ):
-            raise serializers.ValidationError('Score already exists')
+            raise serializers.ValidationError(
+                'Вы уже оценивали это произведение!'
+            )
         return data
 
 
