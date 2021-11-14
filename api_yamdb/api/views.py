@@ -3,7 +3,8 @@ from django.core.mail import send_mail
 from django.contrib.auth.hashers import check_password, make_password
 from django.shortcuts import get_object_or_404
 from django.db.models import Avg
-from rest_framework import viewsets, permissions, filters, status, mixins
+from rest_framework import (viewsets, permissions, filters, status,
+                            mixins)
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -143,18 +144,20 @@ class ListCreateDestroyViewSet(mixins.ListModelMixin, mixins.CreateModelMixin,
 
 
 class CategoryViewSet(ListCreateDestroyViewSet):
-    queryset = Category.objects.all()
+    queryset = Category.objects.all().order_by('id')
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     pagination_class = PageNumberPagination
+    lookup_field = 'slug'
 
 
 class GenresViewSet(ListCreateDestroyViewSet):
-    queryset = Genres.objects.all()
+    queryset = Genres.objects.all().order_by('id')
     serializer_class = GenresSerializer
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (IsAdminOrReadOnly, permissions.AllowAny,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
+    lookup_field = 'slug'
     pagination_class = PageNumberPagination

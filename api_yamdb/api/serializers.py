@@ -62,10 +62,12 @@ class TitleSerializer(serializers.ModelSerializer):
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         fields = ('name', 'slug')
+        lookup_field = "slug"
         model = Category
 
 
 class GenresSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ('name', 'slug')
+        lookup_field = "slug"
         model = Genres
