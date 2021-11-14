@@ -10,10 +10,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 
-from reviews.models import User, Title, Review, Category
+from reviews.models import User, Title, Review, Category, Genres
 from .serializers import (CheckConfirmationCodeSerializer, SendCodeSerializer,
                           UserSerializer, ReviewSerializer, CommentSerializer,
-                          TitleSerializer, CategorySerializer)
+                          TitleSerializer, CategorySerializer,
+                          GenresSerializer)
 from .permissions import IsAdmin, IsAuthorOrAdminOrModerator, IsAdminOrReadOnly
 
 
@@ -144,6 +145,15 @@ class ListCreateDestroyViewSet(mixins.ListModelMixin, mixins.CreateModelMixin,
 class CategoryViewSet(ListCreateDestroyViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+    pagination_class = PageNumberPagination
+
+
+class GenresViewSet(ListCreateDestroyViewSet):
+    queryset = Genres.objects.all()
+    serializer_class = GenresSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
