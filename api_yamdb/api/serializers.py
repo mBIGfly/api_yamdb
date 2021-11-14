@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 
-from reviews.models import User, Review, Comments, Title
+from reviews.models import User, Review, Comments, Title, Category
 
 
 class SendCodeSerializer(serializers.Serializer):
@@ -57,3 +57,9 @@ class TitleSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ('id', 'name', 'rating', 'author')
         model = Title
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ('__all__')
+        model = Category

@@ -3,12 +3,13 @@ from rest_framework.routers import DefaultRouter
 
 from .views import (APIUser, UserViewSet, get_jwt_token,
                     send_confirmation_code, ReviewViewSet,
-                    CommentViewSet, TitletViewSet)
+                    CommentViewSet, TitleViewSet, CategoryViewSet)
 
 
 router = DefaultRouter()
 router.register('users', UserViewSet)
-router.register(r'titles', TitletViewSet)
+router.register(r'titles', TitleViewSet)
+router.register(r'categories', CategoryViewSet)
 router.register(
     r'titles/(?P<title_id>\d+)/reviews',
     ReviewViewSet,

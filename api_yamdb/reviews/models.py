@@ -99,7 +99,7 @@ class Title(models.Model):
         verbose_name_plural = 'Titles'
 
     def __str__(self):
-        return self.name
+        return self.name[:15]
 
 
 class Review(models.Model):
@@ -144,7 +144,7 @@ class Review(models.Model):
         ]
 
     def __str__(self):
-        return self.text
+        return self.text[:15]
 
 
 class Comments(models.Model):
@@ -177,4 +177,4 @@ class Comments(models.Model):
         ordering = ('-pub_date',)
 
     def __str__(self):
-        return self.text
+        return self.text[:15]

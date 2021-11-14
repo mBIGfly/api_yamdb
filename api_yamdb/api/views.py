@@ -3,18 +3,18 @@ from django.core.mail import send_mail
 from django.contrib.auth.hashers import check_password, make_password
 from django.shortcuts import get_object_or_404
 from django.db.models import Avg
-from rest_framework import viewsets, permissions, filters, status
+from rest_framework import viewsets, permissions, filters, status, mixins
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
 
-from reviews.models import User, Title, Review
+from reviews.models import User, Title, Review, Category
 from .serializers import (CheckConfirmationCodeSerializer, SendCodeSerializer,
                           UserSerializer, ReviewSerializer, CommentSerializer,
-                          TitleSerializer)
-from .permissions import IsAdmin, IsAuthorOrAdminOrModerator
+                          TitleSerializer, CategorySerializer)
+from .permissions import IsAdmin, IsAuthorOrAdminOrModerator, IsAdminOrReadOnly
 
 
 @api_view(['POST'])
@@ -127,9 +127,24 @@ class CommentViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user, review=review)
 
 
-class TitletViewSet(viewsets.ModelViewSet):
+class TitleViewSet(viewsets.ModelViewSet):
     # написала,чтобы проверить работает ли подсчет рейтинга
     queryset = Title.objects.annotate(rating=Avg("reviews__score"))
     serializer_class = TitleSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    pagination_class = PageNumberPagination
+
+
+class ListCreateDestroyViewSet(mixins.ListModelMixin, mixins.CreateModelMixin,
+                               mixins.DestroyModelMixin,
+                               viewsets.GenericViewSet):
+    pass
+
+
+class CategoryViewSet(ListCreateDestroyViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
     pagination_class = PageNumberPagination
