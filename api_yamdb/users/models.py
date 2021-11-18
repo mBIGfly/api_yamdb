@@ -1,3 +1,4 @@
+
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -14,22 +15,20 @@ class User(AbstractUser):
         ]
 
     bio = models.TextField(
-        verbose_name='user_bio',
+        verbose_name='user bio',
         blank=True,
         null=True
     )
     email = models.EmailField(
-        verbose_name='user_email',
+        verbose_name='user email',
         unique=True,
     )
     role = models.CharField(
-        verbose_name='user_role',
+        verbose_name='user role',
         max_length=25,
         choices=UserRole.choices,
         default=UserRole.USER,
     )
-    confirmation_code = models.CharField(
-        max_length=6, default='000000')
 
     class Meta:
         verbose_name = 'User'

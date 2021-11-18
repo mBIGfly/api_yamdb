@@ -4,13 +4,13 @@ from rest_framework import serializers
 User = get_user_model()
 
 
-def is_not_me(value):
+def username_is_not_me(value):
     if value == 'me':
         raise serializers.ValidationError(
             'You cannot use `me` as your username'
         )
 
 
-def is_unique(value):
+def username_is_unique(value):
     if User.objects.filter(username=value).exists():
         raise serializers.ValidationError('This username already exists.')
