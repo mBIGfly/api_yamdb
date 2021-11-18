@@ -1,36 +1,47 @@
-from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
-class CustomUserManager(BaseUserManager):
-    def create_user(self, email, password=None, **kwargs):
-        user = self.model(email=email, **kwargs)
-        user.set_password(password)
-        user.save()
-        return user
-
-    def create_superuser(self, email, password, **kwargs):
-        user = self.model(email=email, is_staff=True,
-                          is_superuser=True, **kwargs)
-        user.set_password(password)
-        user.save()
-        return user
-
-
 class User(AbstractUser):
-    email = models.EmailField(('email address'), unique=True)
-    bio = models.TextField(max_length=300, blank=True)
-    confirmation_code = models.CharField(max_length=6, default='000000')
+    class UserRole:
+        USER = 'user'
+        ADMIN = 'admin'
+        MODERATOR = 'moderator'
+        choices = [
+            ('user', 'user'),
+            ('admin', 'admin'),
+            ('moderator', 'moderator'),
+        ]
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
-
-    USER_ROLE = (
-        ('user', 'user'),
-        ('moderator', 'moderator'),
-        ('admin', 'admin'),
+    bio = models.TextField(
+        verbose_name='user_bio',
+        blank=True,
+        null=True
     )
+    email = models.EmailField(
+        verbose_name='user_email',
+        unique=True,
+    )
+    role = models.CharField(
+        verbose_name='user_role',
+        max_length=25,
+        choices=UserRole.choices,
+        default=UserRole.USER,
+    )
+    confirmation_code = models.CharField(
+        max_length=6, default='000000')
 
-    role = models.CharField(max_length=9, choices=USER_ROLE, default='user')
+    class Meta:
+        verbose_name = 'User'
+        verbose_name_plural = 'Users'
 
-    objects = CustomUserManager()
+    @property
+    def is_admin(self):
+        return (
+            self.role == self.UserRole.ADMIN
+            or self.is_superuser
+        )
+
+    @property
+    def is_moderator(self):
+        return self.role == self.UserRole.MODERATOR

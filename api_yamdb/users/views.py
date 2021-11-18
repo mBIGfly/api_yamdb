@@ -1,19 +1,20 @@
 import random
 
+from django.conf import settings
 from django.contrib.auth.hashers import check_password, make_password
+from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
-from django.db.models import Avg
 from django.shortcuts import get_object_or_404
-from rest_framework import filters, status, viewsets
+from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
-from users.models import User
 
+from .models import User
 from .permissions import IsAdmin
 from .serializers import (CheckConfirmationCodeSerializer, SendCodeSerializer,
-                          UserSerializer)
+                          SignUpSerializer, UserSerializer)
 
 
 @api_view(['POST'])
@@ -40,9 +41,9 @@ def send_confirmation_code(request):
 def get_jwt_token(request):
     serializer = CheckConfirmationCodeSerializer(data=request.data)
     if serializer.is_valid():
-        email = serializer.data.get('email')
         confirmation_code = serializer.data.get('confirmation_code')
-        user = get_object_or_404(User, email=email)
+        username = serializer.validated_data.get('username')
+        user = get_object_or_404(User, username=username)
         if check_password(confirmation_code, user.confirmation_code):
             token = AccessToken.for_user(user)
             return Response({'token': f'{token}'}, status=status.HTTP_200_OK)
@@ -77,3 +78,32 @@ class APIUser(APIView):
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response('Вы не авторизованы', status=status.HTTP_401_UNAUTHORIZED)
+
+
+class SignupView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = SignUpSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data.get('email')
+        username = serializer.validated_data.get('username')
+        user = User.objects.create(
+            email=email,
+            username=username,
+            is_active=False,
+        )
+
+        confirmation_code = default_token_generator.make_token(user)
+
+        send_mail(
+            'Email confirmation',
+            f'Your confirmation code: {confirmation_code}',
+            settings.DEFAULT_FROM_EMAIL,
+            [email],
+            fail_silently=True,
+        )
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK
+        )
