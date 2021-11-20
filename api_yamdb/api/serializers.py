@@ -3,21 +3,59 @@ from rest_framework.relations import SlugRelatedField
 
 from reviews.models import User, Review, Comments, Title, Category, Genres
 
+from django.contrib.auth import get_user_model
+from rest_framework import serializers
 
-class SendCodeSerializer(serializers.Serializer):
-    email = serializers.EmailField(required=True)
+from .validators import username_is_not_me, username_is_unique
 
-
-class CheckConfirmationCodeSerializer(serializers.Serializer):
-    email = serializers.EmailField(required=True)
-    confirmation_code = serializers.CharField(required=True)
+User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(
+        required=True,
+        validators=[username_is_unique]
+    )
+
     class Meta:
-        fields = ('first_name', 'last_name',
-                  'username', 'bio', 'email', 'role',)
         model = User
+        fields = (
+            'username', 'email', 'first_name', 'last_name', 'bio', 'role'
+        )
+
+
+class SignUpSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(
+        required=True,
+        validators=[username_is_not_me, username_is_unique]
+    )
+
+    class Meta:
+        model = User
+        fields = ('email', 'username')
+
+
+class CodeSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(required=True)
+    confirmation_code = serializers.CharField(required=True)
+
+    class Meta:
+        model = User
+        fields = ('username', 'confirmation_code')
+
+
+class CategorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        fields = ('name', 'slug')
+        model = Category
+
+
+class GenresSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        fields = ('name', 'slug')
+        model = Genres
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -49,25 +87,31 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comments
 
 
-class TitleSerializer(serializers.ModelSerializer):
-    author = SlugRelatedField(slug_field='username', read_only=True)
-    # добавила поле для расчета рейтинга
+class CustomSerializerField(serializers.SlugRelatedField):
+
+    def to_representation(self, value):
+        return {'name': value.name, 'slug': value.slug}
+
+
+class TitleReadSerializer(serializers.ModelSerializer):
+    genres = CustomSerializerField(
+        queryset=Genres.objects.all(),
+        slug_field='slug', many=True
+    )
+    category = CustomSerializerField(
+        queryset=Category.objects.all(), slug_field='slug')
     rating = serializers.IntegerField(read_only=True, required=False)
 
     class Meta:
-        fields = ('id', 'name', 'rating', 'author')
+        fields = ('id', 'name', 'year', 'rating',
+                  'description', 'genres', 'category')
         model = Title
 
 
-class CategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        fields = ('name', 'slug')
-        lookup_field = "slug"
-        model = Category
-
-
-class GenresSerializer(serializers.ModelSerializer):
-    class Meta:
-        fields = ('name', 'slug')
-        lookup_field = "slug"
-        model = Genres
+class TitleCreateSerializer(TitleReadSerializer):
+    genres = serializers.SlugRelatedField(
+        slug_field='slug',
+        many=True,
+        read_only=True
+    )
+    category = serializers.SlugRelatedField(slug_field='slug', read_only=True)

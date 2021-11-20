@@ -1,30 +1,28 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from .views import (APIUser, UserViewSet, get_jwt_token,
-                    send_confirmation_code, ReviewViewSet,
-                    CommentViewSet, TitleViewSet, CategoryViewSet,
-                    GenresViewSet)
+from .views import (CodeConfirmView, SignupView, UserModelViewset,
+                    ReviewViewSet, CommentViewSet, TitleViewSet,
+                    CategoryViewSet, GenresViewSet)
 
 
 router = DefaultRouter()
-router.register('users', UserViewSet)
-router.register(r'titles', TitleViewSet)
-router.register(r'categories', CategoryViewSet)
-router.register(r'genres', GenresViewSet)
+router.register('users', UserModelViewset)
+router.register(r'titles', TitleViewSet, basename='api_titles')
+router.register(r'categories', CategoryViewSet, basename='api_categories')
+router.register(r'genres', GenresViewSet, basename='api_genres')
 router.register(
     r'titles/(?P<title_id>\d+)/reviews',
     ReviewViewSet,
-    basename='reviews')
+    basename='api_reviews')
 router.register(
     r'titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
     CommentViewSet,
-    basename='comments')
+    basename='api_comments')
 
 
 urlpatterns = [
-    path('v1/auth/email/', send_confirmation_code, name='get_token'),
-    path('v1/auth/token/', get_jwt_token, name='send_confirmation_code'),
-    path('v1/users/me/', APIUser.as_view()),
+    path('v1/auth/signup/', SignupView.as_view()),
+    path('v1/auth/token/', CodeConfirmView.as_view()),
     path('v1/', include(router.urls)),
 ]
