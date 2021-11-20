@@ -1,11 +1,7 @@
-from rest_framework import serializers
-from rest_framework.relations import SlugRelatedField
-
-from reviews.models import User, Review, Comments, Title, Category, Genres
-
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-
+from rest_framework.relations import SlugRelatedField
+from reviews.models import User, Review, Comments, Title, Category, Genre
 from .validators import username_is_not_me, username_is_unique
 
 User = get_user_model()
@@ -55,7 +51,7 @@ class GenresSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = ('name', 'slug')
-        model = Genres
+        model = Genre
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -94,8 +90,8 @@ class CustomSerializerField(serializers.SlugRelatedField):
 
 
 class TitleReadSerializer(serializers.ModelSerializer):
-    genres = CustomSerializerField(
-        queryset=Genres.objects.all(),
+    genre = CustomSerializerField(
+        queryset=Genre.objects.all(),
         slug_field='slug', many=True
     )
     category = CustomSerializerField(
@@ -104,14 +100,19 @@ class TitleReadSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = ('id', 'name', 'year', 'rating',
-                  'description', 'genres', 'category')
+                  'description', 'genre', 'category')
         model = Title
 
 
-class TitleCreateSerializer(TitleReadSerializer):
-    genres = serializers.SlugRelatedField(
-        slug_field='slug',
-        many=True,
-        read_only=True
+class TitleCreateSerializer(serializers.ModelSerializer):
+    genre = serializers.SlugRelatedField(
+        queryset=Genre.objects.all(),
+        slug_field='slug', many=True
     )
-    category = serializers.SlugRelatedField(slug_field='slug', read_only=True)
+    category = serializers.SlugRelatedField(
+        queryset=Category.objects.all(),
+        slug_field='slug')
+
+    class Meta:
+        fields = '__all__'
+        model = Title

@@ -69,7 +69,7 @@ class Category(models.Model):
         return self.name[:15]
 
 
-class Genres(models.Model):
+class Genre(models.Model):
     name = models.CharField(
         max_length=256,
         verbose_name='Имя жанра'
@@ -83,7 +83,7 @@ class Genres(models.Model):
         verbose_name = 'Genre'
         verbose_name_plural = 'Genres'
         ordering = ['id']
-    
+
     def __str__(self):
         return self.name[:15]
 
@@ -101,8 +101,8 @@ class Title(models.Model):
         max_length=200, blank=True, null=True,
         verbose_name='Короткое описание'
     )
-    genres = models.ManyToManyField(
-        Genres,
+    genre = models.ManyToManyField(
+        Genre,
         related_name='titles',
         verbose_name='Жанр произведения'
     )

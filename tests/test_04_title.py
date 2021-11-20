@@ -78,6 +78,7 @@ class Test04TitleAPI:
             title = data['results'][0]
         elif data['results'][1].get('name') == 'Поворот туда':
             title = data['results'][1]
+        
         else:
             assert False, (
                 'Проверьте, что при GET запросе `/api/v1/titles/` возвращаете данные с пагинацией. '
@@ -158,6 +159,7 @@ class Test04TitleAPI:
             'без токена авторизации возвращается статус 200'
         )
         data = response.json()
+        print(data)
         assert type(data.get('id')) == int, (
             'Проверьте, что при GET запросе `/api/v1/titles/{title_id}/` возвращаете данные объекта. '
             'Значение `id` нет или не является целым числом.'
