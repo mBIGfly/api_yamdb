@@ -17,7 +17,7 @@ from reviews.models import User, Title, Review, Category, Genre
 from .filters import TitleFilter
 from .serializers import (UserSerializer, ReviewSerializer, CommentSerializer,
                           TitleReadSerializer, TitleCreateSerializer,
-                          CategorySerializer, GenresSerializer,
+                          CategorySerializer, GenreSerializer,
                           CodeSerializer, SignUpSerializer, UserSerializer)
 from .permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorOrAdminOrModerator
 
@@ -129,7 +129,7 @@ class CategoryViewSet(ListCreateDestroyViewSet):
 
 class GenreViewSet(ListCreateDestroyViewSet):
     queryset = Genre.objects.all()
-    serializer_class = GenresSerializer
+    serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
@@ -181,18 +181,13 @@ class CommentViewSet(ModelViewSet):
 class TitleViewSet(ModelViewSet):
     queryset = Title.objects.annotate(
         rating=Avg('reviews__score')).order_by('id')
+    serializer_class = TitleReadSerializer
     permission_classes = (IsAdminOrReadOnly,)
     pagination_class = PageNumberPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
 
     def get_serializer_class(self):
-        if self.request.method in ["POST", "PATCH"]:
+        if self.request.method in ['POST', 'PATCH']:
             return TitleCreateSerializer
         return TitleReadSerializer
-
-
-class ListCreateDestroyViewSet(mixins.ListModelMixin, mixins.CreateModelMixin,
-                               mixins.DestroyModelMixin,
-                               viewsets.GenericViewSet):
-    pass
