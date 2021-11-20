@@ -1,6 +1,53 @@
-from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from users.models import User
+from django.core.validators import MinValueValidator, MaxValueValidator
+from django.contrib.auth.models import AbstractUser
+
+
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+
+
+class User(AbstractUser):
+    class UserRole:
+        USER = 'user'
+        ADMIN = 'admin'
+        MODERATOR = 'moderator'
+        choices = [
+            ('user', 'user'),
+            ('admin', 'admin'),
+            ('moderator', 'moderator'),
+        ]
+
+    bio = models.TextField(
+        verbose_name='user bio',
+        blank=True,
+        null=True
+    )
+    email = models.EmailField(
+        verbose_name='user email',
+        unique=True,
+    )
+    role = models.CharField(
+        verbose_name='user role',
+        max_length=25,
+        choices=UserRole.choices,
+        default=UserRole.USER,
+    )
+
+    class Meta:
+        verbose_name = 'User'
+        verbose_name_plural = 'Users'
+
+    @property
+    def is_admin(self):
+        return (
+            self.role == self.UserRole.ADMIN
+            or self.is_superuser
+        )
+
+    @property
+    def is_moderator(self):
+        return self.role == self.UserRole.MODERATOR
 
 
 class Category(models.Model):
@@ -16,6 +63,10 @@ class Category(models.Model):
     class Meta:
         verbose_name = 'Category'
         verbose_name_plural = 'Categories'
+        ordering = ['id']
+
+    def __str__(self):
+        return self.name[:15]
 
 
 class Genres(models.Model):
@@ -31,6 +82,10 @@ class Genres(models.Model):
     class Meta:
         verbose_name = 'Genre'
         verbose_name_plural = 'Genres'
+        ordering = ['id']
+    
+    def __str__(self):
+        return self.name[:15]
 
 
 class Title(models.Model):
@@ -43,7 +98,7 @@ class Title(models.Model):
         blank=True, null=True
     )
     description = models.CharField(
-        max_length=200, blank=False, null=True,
+        max_length=200, blank=True, null=True,
         verbose_name='Короткое описание'
     )
     genres = models.ManyToManyField(
@@ -53,7 +108,7 @@ class Title(models.Model):
     )
     category = models.ForeignKey(
         Category,
-        on_delete=models.PROTECT,
+        on_delete=models.SET_NULL,
         related_name='titles',
         blank=True,
         null=True,
@@ -63,6 +118,7 @@ class Title(models.Model):
     class Meta:
         verbose_name = 'Title'
         verbose_name_plural = 'Titles'
+        ordering = ['id']
 
     def __str__(self):
         return self.name[:15]
