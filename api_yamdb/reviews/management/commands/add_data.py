@@ -8,12 +8,11 @@ from reviews.models import (User, Title, Review,
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
-    #'static/data/comments.csv',
         with open('static/data/category.csv', encoding='utf-8') as f:
             reader = csv.DictReader(f)
             for row in reader:
                 category, created = Category.objects.update_or_create(
-                    id=int(row['id']), name=row['name'],
+                    id=row['id'], name=row['name'],
                     slug=row['slug']
                 )
         with open('static/data/genre.csv', encoding='utf-8') as f:
@@ -62,10 +61,10 @@ class Command(BaseCommand):
         with open('static/data/comments.csv', encoding='utf-8') as f:
             reader = csv.DictReader(f)
             for row in reader:
-                comment=Comments.objects.get(review_id=row['review_id'])
-                comment.id=row['id']
-                #comment.review_id=row['review_id']
-                comment.text=row['text']
-                comment.author_id=row['author_id']
-                comment.pub_date=row['pub_date']
-                comment.save()
+                comment, created = Comments.objects.update_or_create(
+                    id=row['id'],
+                    review_id=row['review_id'],
+                    text=row['text'],
+                    author_id=row['author'],
+                    pub_date=row['pub_date']
+                )

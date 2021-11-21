@@ -189,7 +189,6 @@ class Comments(models.Model):
         on_delete=models.CASCADE,
         related_name='comments',
         verbose_name='Отзыв',
-        unique=False
 
     )
     text = models.CharField(
