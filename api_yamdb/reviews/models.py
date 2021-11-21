@@ -1,10 +1,8 @@
-from django.db import models
-from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import AbstractUser
-
-
-from django.contrib.auth.models import AbstractUser
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+
+from .validators import my_year_validator
 
 
 class User(AbstractUser):
@@ -95,7 +93,8 @@ class Title(models.Model):
     )
     year = models.PositiveSmallIntegerField(
         verbose_name='Год выпуска',
-        blank=True, null=True
+        blank=True, null=True,
+        validators=[my_year_validator],
     )
     description = models.CharField(
         max_length=200, blank=True, null=True,
@@ -149,8 +148,8 @@ class Review(models.Model):
     score = models.PositiveSmallIntegerField(
         verbose_name='Оценка',
         validators=[
-            MinValueValidator(0),
-            MaxValueValidator(10)
+            MinValueValidator(0, message='Мин.Оценка 0'),
+            MaxValueValidator(10, message='Макс.Оценка 10')
         ]
     )
 
@@ -169,7 +168,7 @@ class Review(models.Model):
         return self.text[:15]
 
 
-class Comments(models.Model):
+class Comment(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

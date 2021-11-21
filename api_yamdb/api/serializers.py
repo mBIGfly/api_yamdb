@@ -1,7 +1,9 @@
 from django.contrib.auth import get_user_model
+
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
-from reviews.models import User, Review, Comments, Title, Category, Genre
+from reviews.models import Category, Comment, Genre, Review, Title, User
+
 from .validators import username_is_not_me, username_is_unique
 
 User = get_user_model()
@@ -43,14 +45,14 @@ class CodeSerializer(serializers.ModelSerializer):
 class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
-        fields = ('name', 'slug')
+        exclude = ('id',)
         model = Category
 
 
 class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
-        fields = ('name', 'slug')
+        exclude = ('id',)
         model = Genre
 
 
@@ -80,7 +82,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = ('id', 'text', 'author', 'pub_date')
-        model = Comments
+        model = Comment
 
 
 class TitleReadSerializer(serializers.ModelSerializer):

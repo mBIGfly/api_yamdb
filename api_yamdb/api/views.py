@@ -1,26 +1,27 @@
-from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
-from django.shortcuts import get_object_or_404
+from django.core.mail import send_mail
 from django.db.models import Avg
-from rest_framework import (viewsets, permissions, filters, status,
-                            mixins)
+from django.shortcuts import get_object_or_404
+
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, permissions, status
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import RefreshToken
-from reviews.models import User, Title, Review, Category, Genre
-from .filters import TitleFilter
-from .serializers import (UserSerializer, ReviewSerializer, CommentSerializer,
-                          TitleReadSerializer, TitleCreateSerializer,
-                          CategorySerializer, GenreSerializer,
-                          CodeSerializer, SignUpSerializer, UserSerializer)
-from .permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorOrAdminOrModerator
+from reviews.models import Category, Genre, Review, Title, User
 
+from .filters import TitleFilter
+from .mixins import ListCreateDestroyViewSet
+from .permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorOrAdminOrModerator
+from .serializers import (CategorySerializer, CodeSerializer,
+                          CommentSerializer, GenreSerializer, ReviewSerializer,
+                          SignUpSerializer, TitleCreateSerializer,
+                          TitleReadSerializer, UserSerializer)
 
 User = get_user_model()
 
@@ -108,12 +109,6 @@ class CodeConfirmView(APIView):
         return Response(
             {'token': str(token.access_token)},
             status.HTTP_200_OK)
-
-
-class ListCreateDestroyViewSet(mixins.ListModelMixin, mixins.CreateModelMixin,
-                               mixins.DestroyModelMixin,
-                               viewsets.GenericViewSet):
-    pass
 
 
 class CategoryViewSet(ListCreateDestroyViewSet):
