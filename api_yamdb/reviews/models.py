@@ -102,7 +102,7 @@ class Title(models.Model):
         verbose_name='Короткое описание'
     )
     genre = models.ManyToManyField(
-        Genre,
+        Genre, through='GenreTitle',
         related_name='titles',
         verbose_name='Жанр произведения'
     )
@@ -122,6 +122,14 @@ class Title(models.Model):
 
     def __str__(self):
         return self.name[:15]
+
+
+class GenreTitle(models.Model):
+    genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
+    title = models.ForeignKey(Title, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'Жанр:{self.genre} произведения {self.title}'
 
 
 class Review(models.Model):
@@ -160,8 +168,8 @@ class Review(models.Model):
         ordering = ('-pub_date',)
         constraints = [
             models.UniqueConstraint(
-                fields=["author", "title"],
-                name="unique_review"
+                fields=['author', 'title'],
+                name='unique_review'
             )
         ]
 
@@ -180,7 +188,8 @@ class Comments(models.Model):
         Review,
         on_delete=models.CASCADE,
         related_name='comments',
-        verbose_name='Отзыв'
+        verbose_name='Отзыв',
+        unique=False
 
     )
     text = models.CharField(
