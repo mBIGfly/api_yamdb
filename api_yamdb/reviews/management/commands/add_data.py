@@ -40,12 +40,12 @@ class Command(BaseCommand):
             for row in reader:
                 id = row['id']
                 title_id = row['title_id']
-                genres_id = row['genre_id']
+                genre_id = row['genre_id']
                 new_data.execute(
                     "INSERT INTO reviews_title_genres "
-                    "(id,title_id,genres_id)"
+                    "(id,title_id,genre_id)"
                     "VALUES(?, ?, ?)",
-                    (id, title_id, genres_id)
+                    (id, title_id, genre_id)
                 )
                 connect.commit()
         with open('static/data/genre.csv', encoding='utf-8') as data:

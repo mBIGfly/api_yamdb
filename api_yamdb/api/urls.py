@@ -3,14 +3,14 @@ from rest_framework.routers import DefaultRouter
 
 from .views import (CodeConfirmView, SignupView, UserModelViewset,
                     ReviewViewSet, CommentViewSet, TitleViewSet,
-                    CategoryViewSet, GenresViewSet)
+                    CategoryViewSet, GenreViewSet)
 
 
 router = DefaultRouter()
 router.register('users', UserModelViewset)
 router.register(r'titles', TitleViewSet, basename='api_titles')
 router.register(r'categories', CategoryViewSet, basename='api_categories')
-router.register(r'genres', GenresViewSet, basename='api_genres')
+router.register(r'genres', GenreViewSet, basename='api_genres')
 router.register(
     r'titles/(?P<title_id>\d+)/reviews',
     ReviewViewSet,

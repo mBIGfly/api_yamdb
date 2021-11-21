@@ -1,30 +1,26 @@
 from django.core.mail import send_mail
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
 from django.db.models import Avg
 from rest_framework import (viewsets, permissions, filters, status,
                             mixins)
+from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-from rest_framework.views import APIView
-
-from reviews.models import User, Title, Review, Category, Genres
-from .serializers import (UserSerializer, ReviewSerializer, CommentSerializer,
-                          TitleReadSerializer, TitleCreateSerializer,
-                          CategorySerializer, GenresSerializer,
-                          CodeSerializer, SignUpSerializer, UserSerializer)
-from .permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorOrAdminOrModerator
-from django.conf import settings
-from django.contrib.auth import get_user_model
-from django.contrib.auth.tokens import default_token_generator
-from django.core.mail import send_mail
-from django.shortcuts import get_object_or_404
-from rest_framework import permissions, status
-from rest_framework.decorators import action
-from rest_framework.response import Response
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import RefreshToken
+from reviews.models import User, Title, Review, Category, Genre
 from .filters import TitleFilter
+from .serializers import (UserSerializer, ReviewSerializer, CommentSerializer,
+                          TitleReadSerializer, TitleCreateSerializer,
+                          CategorySerializer, GenreSerializer,
+                          CodeSerializer, SignUpSerializer, UserSerializer)
+from .permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorOrAdminOrModerator
+
 
 User = get_user_model()
 
@@ -131,9 +127,9 @@ class CategoryViewSet(ListCreateDestroyViewSet):
     ordering = ['id']
 
 
-class GenresViewSet(ListCreateDestroyViewSet):
-    queryset = Genres.objects.all()
-    serializer_class = GenresSerializer
+class GenreViewSet(ListCreateDestroyViewSet):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
@@ -141,7 +137,7 @@ class GenresViewSet(ListCreateDestroyViewSet):
     pagination_class = PageNumberPagination
 
 
-class ReviewViewSet(viewsets.ModelViewSet):
+class ReviewViewSet(ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = (IsAuthorOrAdminOrModerator,)
     pagination_class = PageNumberPagination
@@ -164,7 +160,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user, title=title)
 
 
-class CommentViewSet(viewsets.ModelViewSet):
+class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = (IsAuthorOrAdminOrModerator,)
     pagination_class = PageNumberPagination
@@ -182,20 +178,16 @@ class CommentViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user, review=review)
 
 
-class TitleViewSet(viewsets.ModelViewSet):
+class TitleViewSet(ModelViewSet):
     queryset = Title.objects.annotate(
         rating=Avg('reviews__score')).order_by('id')
+    serializer_class = TitleReadSerializer
     permission_classes = (IsAdminOrReadOnly,)
     pagination_class = PageNumberPagination
+    filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
 
     def get_serializer_class(self):
-        if self.action in ('create', 'update', 'partial_update'):
+        if self.request.method in ['POST', 'PATCH']:
             return TitleCreateSerializer
         return TitleReadSerializer
-
-
-class ListCreateDestroyViewSet(mixins.ListModelMixin, mixins.CreateModelMixin,
-                               mixins.DestroyModelMixin,
-                               viewsets.GenericViewSet):
-    pass

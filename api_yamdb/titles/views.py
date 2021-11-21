@@ -1,6 +1,8 @@
 from api_yamdb.permissions import IsAdminOrReadOnly
 from django.db.models import Avg
-from rest_framework import mixins, permissions
+from rest_framework import mixins, pagination, permissions
+from rest_framework.pagination import (LimitOffsetPagination,
+                                       PageNumberPagination)
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 
 from .filters import TitleFilter
@@ -39,6 +41,7 @@ class GenreViewSet(RetrieveCreateDeleteViewSet):
 
 
 class TitleViewSet(ModelViewSet):
+    pagination_class = PageNumberPagination
     serializer_class = TitleSerializer
     filterset_fields = ('year',)
     permission_classes = [
