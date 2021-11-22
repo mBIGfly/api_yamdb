@@ -87,11 +87,7 @@ class CodeConfirmView(APIView):
 
     def post(self, *args, **kwargs):
         serializer = CodeSerializer(data=self.request.data)
-        if not serializer.is_valid():
-            return Response(
-                data=serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        serializer.is_valid(raise_exception=True)
         username = serializer.validated_data.get('username')
         token = serializer.validated_data.get(
             'confirmation_code')
