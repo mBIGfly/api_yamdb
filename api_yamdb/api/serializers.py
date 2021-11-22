@@ -102,3 +102,16 @@ class TitleCreateSerializer(TitleReadSerializer):
     category = serializers.SlugRelatedField(
         queryset=Category.objects.all(), slug_field='slug'
     )
+
+
+class TitleSerializer(serializers.ModelSerializer):
+    genre = GenreSerializer(many=True)
+    category = CategorySerializer(many=False)
+    rating = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Title
+        fields = '__all__'
+
+    def get_rating(self, obj):
+        return obj.rating_avg
